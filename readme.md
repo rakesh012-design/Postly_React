@@ -18,11 +18,13 @@ Postly is a full-stack web application that enables users to create, share, and 
 
 ## Screenshots
 
-### Home Page
-![Home](screenshots/home.png)
+
 
 ### Login Page
 ![Login](screenshots/login.png)
 
 ### Mail Verification
 ![Mail Verification](screenshots/mail%20verification.png)
+
+### Home Page
+![Home](screenshots/home.png)
