@@ -18,10 +18,17 @@ const app=express()
 
 app.use(express.json())
 app.use(cookieParser())
-app.use(cors({
-  origin:['http://localhost:5173','http://localhost:4173','https://postly-react-gauu.vercel.app'],
-  credentials:true
-}))
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:4173",
+      "https://postly-react-gauu.vercel.app",
+      "https://postly-react-gauu-b7w8dbxcj-rak04657-8714s-projects.vercel.app"
+    ],
+    credentials: true,
+  }),
+);
 
 
 
