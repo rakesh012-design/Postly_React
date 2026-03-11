@@ -28,6 +28,7 @@ const Login = () => {
   useEffect(()=>{
     const checkStatus_=async()=>{
       const res=await dispatch(checkStatus())
+      console.log(res)
       if(res.payload.success===true){
         navigate('/home')
       }else{
