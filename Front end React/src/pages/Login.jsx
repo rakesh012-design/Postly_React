@@ -30,6 +30,8 @@ const Login = () => {
       const res=await dispatch(checkStatus())
       if(res.payload.success===true){
         navigate('/home')
+      }else{
+        toast.error(res.payload.message)
       }
     }
     checkStatus_()
