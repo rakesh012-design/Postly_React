@@ -87,7 +87,7 @@ export const googleLoginFunction=createAsyncThunk('googleLogin',
 
 export const checkStatus=createAsyncThunk('checkStatus',
   async()=>{
-    const res=await fetch('http://localhost:3000/api/random/check',{
+    const res=await fetch('https://postly-react-gauu.vercel.app/',{
       method:"GET",
       credentials:"include"
     })
