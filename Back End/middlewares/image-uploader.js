@@ -19,11 +19,14 @@ const checkFilter=(req,file,cb)=>{
   }
 }
 
-
+const uploadSingleImage=multer({storage:storage,fileFilter:checkFilter,limits:{fileSize:5*1024*1024}}).single('image')
+const uploadMultipleImage=multer({storage:storage}).array('image',10)
+/*
 module.exports=multer({
   storage:storage,
   fileFilter:checkFilter,
   limits:{
     fileSize:5*1024*1024
   }
-})
+})*/
+module.exports={uploadSingleImage,uploadMultipleImage}

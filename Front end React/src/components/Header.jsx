@@ -1,13 +1,12 @@
 import {Outlet,Link, useLocation, useNavigate} from 'react-router-dom'
-import Home from '../pages/Home'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { checkStatus, fetchUser, logoutUser } from '../store/userStore'
-import { fetchAllPosts, getPosts } from '../store/postsStore'
 import {CgProfile} from'react-icons/cg'
+import {CiSaveDown2} from 'react-icons/ci'
 import { useState, useRef } from 'react'
 import { IoChevronDown } from 'react-icons/io5'
-import { RiEditCircleFill, RiLockPasswordLine, RiLogoutBoxLine, RiProfileFill } from 'react-icons/ri'
+import { RiEditCircleFill, RiLockPasswordLine, RiLogoutBoxLine } from 'react-icons/ri'
 
 
 
@@ -68,7 +67,7 @@ const Header = () => {
             {/* Navigation Links */}
             <div className='hidden md:flex gap-8'>
               <Link 
-                to={'/home'} 
+                to={'/home?pageNum=1'} 
                 className={`px-3 py-2 rounded-md text-sm font-medium transition ${currPage==="home" ? "bg-indigo-100 text-indigo-700" : "text-gray-700 hover:text-indigo-600"}`}
               >
                 Home
@@ -80,7 +79,7 @@ const Header = () => {
                 Add Post
               </Link>
               <Link 
-                to={'/home/allposts'} 
+                to={'/home/allposts?pageNum=1'} 
                 className={`px-3 py-2 rounded-md text-sm font-medium transition ${currPage==="allposts" ? "bg-indigo-100 text-indigo-700" : "text-gray-700 hover:text-indigo-600"}`}
               >
                 All Posts
@@ -93,7 +92,8 @@ const Header = () => {
                 onClick={() => setProfileOpen(!profileOpen)}
                 className='flex items-center gap-2 px-3 py-2 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition cursor-pointer'
               >
-                <CgProfile size={24} className='text-indigo-600'/>
+                {user?.profilePic ? <img src={user.profilePic} style={{height:"24px", width:"24px",borderRadius:"50%" }}/> 
+                :<CgProfile size={24} className='text-indigo-600'/>}
                 <span className='text-sm font-semibold text-gray-800'>{user?.userName || 'User'}</span>
                 <IoChevronDown size={16} className={`text-indigo-600 transition ${profileOpen ? 'rotate-180' : ''}`}/>
               </button>
@@ -102,16 +102,7 @@ const Header = () => {
               {profileOpen && (
                 <div className='absolute top-full right-0 mt-2 w-48 max-h-72 overflow-y-auto bg-white rounded-lg shadow-lg border border-gray-200 z-50'>
                   <div className='py-1'>
-                    <button
-                      onClick={() => {
-                        navigate('/profile')
-                        setProfileOpen(false)
-                      }}
-                      className='w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition flex items-center gap-2'
-                    >
-                      <CgProfile size={18} />
-                      <span>View Profile</span>
-                    </button>
+                   
                     <button
                     to={'/home/change-password'}
                       onClick={() => {
@@ -130,7 +121,7 @@ const Header = () => {
                       }}
                       className='w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition flex items-center gap-2 border-t border-gray-200'
                     >
-                      <RiProfileFill size={18} />
+                      <CgProfile size={18} />
                       <span>Profile</span>
                     </button>
                      <button
@@ -142,6 +133,17 @@ const Header = () => {
                     >
                       <RiEditCircleFill size={18} />
                       <span>Edit Profile</span>
+                    </button>
+                     <button
+                    to={'/home/change-password'}
+                      onClick={() => {
+                        navigate('/home/user-favourites')
+                        setProfileOpen(false)
+                      }}
+                      className='w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition flex items-center gap-2 border-t border-gray-200'
+                    >
+                      <CiSaveDown2 size={18} />
+                      <span>Saved Posts</span>
                     </button>
                     <button
                       onClick={handleLogout}

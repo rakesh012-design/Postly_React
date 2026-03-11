@@ -14,10 +14,12 @@ const postSchema=mongoose.Schema({
     type:String,
     required:true
   },
-  image:{
+  image:[
+    {
     type:String,
-    required:true
-  },
+    required:true}
+  ]
+  ,
   uploadedBy:{
     type:mongoose.Schema.ObjectId,
     ref:'User',

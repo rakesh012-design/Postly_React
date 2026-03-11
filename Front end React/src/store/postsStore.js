@@ -1,14 +1,10 @@
 import {createAsyncThunk, createSlice,current} from '@reduxjs/toolkit'
-import { useDispatch } from 'react-redux'
-import { removeLikedPost } from './userStore'
-
 
 
 
 export const getPosts=createAsyncThunk('getPosts',
   async(pageNum)=>{
     //console.log(pageNum)
-    console.log(pageNum)
     const res=await fetch(`http://localhost:3000/api/random/post/pagination?page=${pageNum || 1}`,{
       method:"GET",
       credentials:'include'
@@ -43,7 +39,7 @@ export const fetchAllPosts=createAsyncThunk('fetchAllPosts',
 
 export const createPost=createAsyncThunk('createPost',
   async({formData})=>{
-    const res=await fetch('http://localhost:3000/api/random/post/upload',{
+    const res=await fetch('http://localhost:3000/api/random/post/upload-posts',{
       method:"POST",
       credentials:'include',
       body:formData
@@ -90,6 +86,7 @@ export const deletePost=createAsyncThunk('deletePost',
     return data
   }
 )
+
 
 
 

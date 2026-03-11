@@ -2,6 +2,8 @@ import { createSlice,createAsyncThunk,current } from "@reduxjs/toolkit";
 
 
 
+
+
 export const signupUser=createAsyncThunk('signupUser',
   async({userName,email,password})=>{
     const res=await fetch('http://localhost:3000/api/random/signup',{
@@ -125,7 +127,67 @@ export const editUser=createAsyncThunk('editUser',
   }
 )
 
+export const uploadProfilePicture=createAsyncThunk('upload profile picture',
+  async(formdata)=>{
+    const res=await fetch('http://localhost:3000/api/random/upload/profile-picture',{
+      method:"POST",
+      credentials:'include',
+      body:formdata
+    })
+   const data=res.json()
+   return data 
+  }
+)
 
+export const forgotPassword=createAsyncThunk('forgot password',
+  async(email)=>{
+    const res=await fetch('http://localhost:3000/api/random/forgot-password',{
+      method:'POST',
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({email})
+    })
+    const data=await res.json()
+    return data
+  })
+
+export const verifyTokenPassword=createAsyncThunk('verifyPasswordToken',
+  async(verificationToken)=>{
+    const res=await fetch('http://localhost:3000/api/random/verify/forgot-passowrd',{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({verificationToken})
+    })
+    const data=res.json()
+    return data
+  }
+  
+)
+
+export const addPostToFavourites=createAsyncThunk('addPostToFavourites',
+  async(postId)=>{
+    const res=await fetch(`http://localhost:3000/api/random/post/add-post-to-favourites/${postId}`,{
+      method:"GET",
+      credentials:"include"
+    })
+    const data=res.json()
+    return data
+  }
+)
+
+export const getUserFavourites=createAsyncThunk('getUserFavourites',
+  async()=>{
+    const res=await fetch('http://localhost:3000/api/random/post/get-user-favourites',{
+      method:"GET",
+      credentials:'include'
+    })
+    const data=await res.json()
+    return data
+  }
+)
 const userSlice=createSlice({
   name:'userSlice',
   initialState:{
@@ -134,37 +196,27 @@ const userSlice=createSlice({
   reducers:{},
   extraReducers:(builder)=>{
     builder.addCase(login.fulfilled,(state,action)=>{
-      console.log(action.payload)
+      state.user=action.payload.user
     })
     builder.addCase(fetchUser.fulfilled,(state,action)=>{
       state.user=action.payload.user
     })
-    builder.addCase(login.rejected,(state,action)=>{
-      console.log('in rejected',action.payload)
+ 
+    builder.addCase(googleLoginFunction.fulfilled,(state,action)=>{
     })
-    builder.addCase(signupUser.fulfilled,(state,action)=>{
-      
-    })
-    builder.addCase(verifyUser.fulfilled,(state,action)=>{
-      
-    })
-    builder.addCase(googleLoginFunction.fulfilled,(stat,action)=>{
-      console.log(action.payload)
-    })
-    builder.addCase(googleLoginFunction.rejected,(state,action)=>{
-      console.log(action.payload)
-    })
-    builder.addCase(changePassword.fulfilled,(state,action)=>{
-     // console.log('from builder',action.payload)
+  
+    builder.addCase(uploadProfilePicture.fulfilled,(state,action)=>{
+      state.user.profilePic=action.payload.profilePic
     })
     builder.addCase(editUser.fulfilled,(state,action)=>{
-      console.log(action.payload)
       state.user.userName=action.payload.user.userName
       state.user.email=action.payload.user.email
+    })
+    builder.addCase(addPostToFavourites.fulfilled,(state,action)=>{
+      state.user.FavouritePosts=action.payload.userFavourites
     })
   }
 })
 
-export const  {removeLikedPost}=userSlice.actions
 
 export default userSlice

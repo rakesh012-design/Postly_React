@@ -5,17 +5,22 @@ const jwt=require('jsonwebtoken')
 
 
 const authenticateUser=(req,res,next)=>{
-  //const header=req.headers['authorization']
   try{
     const token=req.cookies.token
-    //console.log(req.cookies)
+    if(!token){
+      return jsonUtil(res,401,false,'user is not logged in. Pleases login to continue')
+    }
     const decoded=jwt.verify(token,process.env.JWT_SECRET_KEY)
-    //const user=token.getpayload
     req.userId=decoded['userId']
+    next()
   }catch(e){
-    return jsonUtil(res,400,false,e.message)
+    if(e.name==='TokenExpiredError'){
+      res.clearCookie('token')
+      return jsonUtil(res,500,false,'Token Expired')
+    }
+    return jsonUtil(res,500,false,e.message)
   }
-  next()
+  
 }
 
 module.exports={authenticateUser}

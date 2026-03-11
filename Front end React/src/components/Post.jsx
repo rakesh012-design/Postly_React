@@ -1,8 +1,12 @@
 import {AiFillHeart} from 'react-icons/ai'
+import {FaRegBookmark,FaBookmark} from 'react-icons/fa'
 import {CgProfile} from 'react-icons/cg'
-import { getPostDetails, likePost } from '../store/postsStore'
+import {  getPostDetails, likePost } from '../store/postsStore'
+import { addPostToFavourites } from '../store/userStore'
 import { useDispatch, useSelector } from 'react-redux'
 import {useNavigate} from 'react-router-dom'
+import { Button } from '@mui/material'
+import Carousel from './Carousel'
 
 
 const Post=({post})=>{
@@ -18,7 +22,12 @@ const Post=({post})=>{
   const handleEditPost=async(id)=>{
     navigate(`/home/edit-post/${id}`)
   }
-  
+
+  const handleAddToFavourites=async(id)=>{
+    console.log('handle add to Favourites called')
+    await dispatch(addPostToFavourites(id))
+  }
+ 
   
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition overflow-hidden">
@@ -26,7 +35,9 @@ const Post=({post})=>{
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white">
-            <CgProfile size={20}/>
+            {post.uploadedBy.profilePic ? <img src={post?.uploadedBy?.profilePic} referrerPolicy='no-referrer'
+              style={{ width: "40px", height: "40px", borderRadius: "50%"}} /> :
+            <CgProfile size={20}/>}
           </div>
           <span className="font-semibold text-gray-800">{post.uploadedBy.userName || store.user?.userName}</span>
         </div>
@@ -34,14 +45,14 @@ const Post=({post})=>{
 
       {/* Image */}
       <div 
-        onClick={()=>handleEditPost(post._id)}
-        className="w-full h-48 bg-gray-200 cursor-pointer hover:opacity-90 transition overflow-hidden"
-      >
+        className="w-full h-48 bg-gray-200 cursor-pointer hover:opacity-90 transition overflow-hidden">
+      {post.image.length>1 ? 
+      <Carousel images={post.image}/>:
         <img 
           src={post.image} 
           alt={post.title}
           className="w-full h-full object-cover"
-        />
+        />}
       </div>
 
       {/* Post Content */}
@@ -82,6 +93,8 @@ const Post=({post})=>{
             </div>
           )}
         </div>
+        <div className='relative float-end'><Button color='none' onClick={()=>handleAddToFavourites(post._id)}>
+        {store.user?.FavouritePosts.some((p)=>String(p)===String(post._id))  ?<FaBookmark size={25}/>  :<FaRegBookmark size={25} />}</Button> </div>
       </div>
     </div>
   )

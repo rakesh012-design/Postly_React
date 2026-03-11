@@ -30,6 +30,10 @@ const userSchema=mongoose.Schema({
       ref:'Post'
     }
   ],
+  FavouritePosts:[{
+    type:mongoose.Schema.ObjectId,
+    ref:'Post'
+  }],
   profilePic:{
     type:String
   },

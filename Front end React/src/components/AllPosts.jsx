@@ -1,6 +1,7 @@
 import React from 'react'
 import { fetchAllPosts, getPosts } from '../store/postsStore'
 import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Post from './Post'
 import Pager from './Pager'
 import { useState } from 'react'
@@ -10,11 +11,14 @@ import {FaSpinner} from 'react-icons/fa'
 const AllPosts = () => {
   const store=useSelector((store)=>store.postStore)
   const dispatch=useDispatch()
-
-  const [pageNum,setPageNum]=useState(1)
+  const [searchParams]=useSearchParams()
+  const navigate=useNavigate()
+  const urlPageNum=searchParams.get('pageNum')
   
+  const [pageNum,setPageNum]=useState(urlPageNum) 
   const handleChangePage=(num)=>{
     setPageNum(num)
+    navigate(`/home/allposts?pageNum=${num}`)
     dispatch(fetchAllPosts(num))
 
   }

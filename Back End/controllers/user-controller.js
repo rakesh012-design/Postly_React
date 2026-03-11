@@ -2,10 +2,13 @@ require('dotenv').config({quiet:true})
 const User=require('../models/user')
 const jsonUtil=require('../util/json-util')
 const bcrypt=require('bcryptjs')
+const crypto=require('crypto')
 const jwt=require('jsonwebtoken')
 const {sendVerificationCodeEmail}=require('../helper/mailTrap')
 const {OAuth2Client}=require('google-auth-library')
+const {uploadToCloudinary}=require('../helper/cloudinary-helper')
 const client=new OAuth2Client('622527416169-o52p3r9sli8a6kchm9k11fldn5ofvn5d.apps.googleusercontent.com')
+const nodeMailer=require('../helper/nodemailer')
 
 const signUpUser=async(req,res)=>{
   try{
@@ -130,8 +133,11 @@ const googleLogin=async(req,res)=>{
     const userInfo=ticket.getPayload()
     const user=await User.findOne({email:userInfo.email})
     if(!user){
-  
       const user=new User({email:userInfo.email,password:'123456',userName:userInfo.name})
+      await user.save()
+    }
+    if(user && !user.profilePic){
+      user.profilePic=userInfo.picture
       await user.save()
     }
     const token=jwt.sign({userId:user._id},process.env.JWT_SECRET_KEY,{expiresIn:'1h'})
@@ -150,7 +156,6 @@ const googleLogin=async(req,res)=>{
 const changePassword=async(req,res)=>{
   try{
     const user=await User.findById(req.userId)
-    console.log(req.body)
     const {oldPassword,newPassword}=req.body
     if(!oldPassword || !newPassword){
       return res.status(403).json({success:false,message:'please  Enter both the passwords'})
@@ -193,5 +198,65 @@ const editUser=async(req,res)=>{
   }
 }
 
+const uploadProfilePicture=async(req,res)=>{
+  try{
+    console.log('from controller',req.file.path)
+    const image=await uploadToCloudinary(req.file.path)
+    const user=await User.findById(req.userId)
+    user.profilePic=image.url
+    await user.save()
+    user.password=undefined
+    return res.status(200).json({success:true,message:'picture added successfully',profilePic:user.profilePic})
+  }catch(e){
+    console.log(e)
+    return res.status(400).json({success:false,message:`error while changing profile picture ${e.message}`})
+  }
 
-module.exports={signUpUser,loginUser,verifyUser,getCurrentUser,logout,check,googleLogin,changePassword,editUser}
+}
+
+const forgotPassword=async(req,res)=>{
+  try{
+    const {email}=req.body
+    const user=await User.findOne({email})
+    user.verificationToken=crypto.randomBytes(32).toString('hex')
+    await user.save()
+    user.password=undefined
+    await nodeMailer.sendPasswordResetEmail(email,user.verificationToken)
+    return res.status(200).json({success:true,message:'verification code has been sent to your email',user})
+  }catch(e){
+    return res.status(500).json({success:false,message:`something went try again later ${e.message}`})
+  }
+}
+
+const verifyForgotPasswordToken=async(req,res)=>{
+  try{
+    const {verificationToken}=req.body
+    const user=await User.findOne({verificationToken:verificationToken})
+    if(!user){
+      return res.status(400).json({success:false,message:'user not found'})
+    }
+    const salt=await bcrypt.genSalt(10)
+    const hashedPassword=await bcrypt.hash('123456',salt)
+    user.password=hashedPassword
+    await user.save()
+    return res.status(200).json({success:true,message:'your password has been reset to 123456 please change it.'})
+  }catch(e){
+    console.log(e)
+    return res.status(500).json({success:false,message:`something went wrong ${e.message}`})
+  }
+}
+
+module.exports = {
+  signUpUser,
+  loginUser,
+  verifyUser,
+  getCurrentUser,
+  logout,
+  check,
+  googleLogin,
+  changePassword,
+  editUser,
+  uploadProfilePicture,
+  forgotPassword,
+  verifyForgotPasswordToken
+};

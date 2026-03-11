@@ -17,6 +17,7 @@ const Login = () => {
   const navigate=useNavigate()
   const dispatch=useDispatch()
 
+
   const [showPassword,setShowPassword]=useState(false)
 
   const changePasswordState=()=>{
@@ -35,12 +36,11 @@ const Login = () => {
   },[])
 
   const loginUser=async()=>{
-    
     const email=emailRef.current.value
     const password=passwordRef.current.value
     const res=await dispatch(login({email,password}))
     if(res.payload.success){
-      navigate('/home')
+      navigate('/home?pageNum=1')
     }
     else{
       toast.error(res.payload.message)
@@ -75,13 +75,18 @@ const Login = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
             <div className='flex items-center'>
-            <input
-              type={showPassword ? 'text': 'password'}
-              ref={passwordRef}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-              placeholder="Enter your password"
-            />
-            {showPassword ? <FaEye onClick={changePasswordState}/> : <FaEyeSlash onClick={changePasswordState}/>}
+              <input
+                type={showPassword ? 'text': 'password'}
+                ref={passwordRef}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                placeholder="Enter your password"
+              />
+              {showPassword ? <FaEye onClick={changePasswordState}/> : <FaEyeSlash onClick={changePasswordState}/>}
+            </div>
+            <div className="text-right mt-2">
+              <Link to="/forgot-password" className="text-sm text-indigo-600 hover:underline">
+                Forgot Password?
+              </Link>
             </div>
           </div>
 

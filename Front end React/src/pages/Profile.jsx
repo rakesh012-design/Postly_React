@@ -1,22 +1,56 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import {CgProfile} from 'react-icons/cg'
-
+import {CgProfile, CgSpinner} from 'react-icons/cg'
+import {Button} from '@mui/material'
+import { uploadProfilePicture } from '../store/userStore'
+import {ToastContainer,toast} from 'react-toastify'
 const Profile = () => {
   const dispatch=useDispatch()
+  const formData=new FormData()
+
 
   const store=useSelector((store)=>store.userStore)
   const user=store.user
-  console.log('user from profile',store.user)
+  //console.log('this is user',user)
+  const [isLoading,setIsLoading]=useState(false)
+
+  const handleImageChange=(e)=>{
+    //console.log(e.target.files[0])
+    formData.append('image',e.target.files[0])
+  }
+  const handleonSubmit=async(e)=>{
+    setIsLoading(true)
+    e.preventDefault()
+    const res=await dispatch(uploadProfilePicture(formData))
+    console.log(res.payload)
+    setIsLoading(false)
+    if(res.payload.success===true){
+      toast.success(res.payload.message)
+    }else{
+      toast.error(res.payload.message)
+    }
+  }
+  console.log(user)
+
   return (
     <div className="row d-flex justify-content-center">
+      <ToastContainer position='top-right' autoClose={3000}/>
         <div className="col col-lg-7 mb-4 mb-lg-0">
           <div className="card" style={{borderRadius: ".5rem"}}>
             <div className="row g-0">
              <div className="col-md-4 gradient-custom text-center text-black items-center flex flex-col" >
-                <CgProfile className="img-fluid my-5" style={{width: "80px"}}/>
+              {user?.profilePic ? <img src={user?.profilePic} 
+              referrerPolicy='no-referrer'
+              style={{ width: "80px", height: "80px", borderRadius: "50%" }} /> :
+                <CgProfile className="img-fluid my-5" style={{width: "80px"}}/>}
+                <p>change profile picture</p>
+                <form className='form-outline' onSubmit={handleonSubmit}>
+                  <input className='form-control' type='file'  accept='image/*' onChange={handleImageChange}/>
+                  <Button variant='outlined' type='submit'>{isLoading ? <CgSpinner className='animate-spin'/>:"upload"}</Button>
+                </form>
                 <h1>{user?.userName}</h1>
               </div>
+              
               <div className="col-md-8">
                 <div className="card-body p-4">
                   <h6>Information</h6>

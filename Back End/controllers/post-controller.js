@@ -1,5 +1,6 @@
 const Post=require('../models/post')
 const User=require('../models/user')
+const cloudinary=require('../helper/cloudinary-helper')
 
 
 
@@ -10,7 +11,13 @@ const createPost=async(req,res)=>{
 
     const {title,caption}=req.body
     const uploadedBy=req.userId
-    const image=req.imageUrl
+    const files=req.files
+    let image=[]
+    for(let i=0;  i<files.length; i++){
+      const {url}=await cloudinary.uploadToCloudinary(files[i].path)
+      image.push(url)
+    }
+    
     const post=new Post({title,caption,uploadedBy,image})
     await post.save()
     return res.status(200).json({success:true,message:'Post uploaded successfully',post})
@@ -24,6 +31,7 @@ const createPost=async(req,res)=>{
 }
 
 const findPosts=async(req,res)=>{
+
   try{
     const posts=await Post.find({uploadedBy:req.userId})
     .populate('uploadedBy','userName').populate('likedBy','userName')
@@ -73,9 +81,12 @@ const fetchAllPosts=async(req,res)=>{
     const totalPosts=Post.countDocuments()
     const totalPages=Math.floor((totalPosts/postsPerPage))
     const allPosts=await Post.find()
-    .populate('uploadedBy','userName').populate('likedBy','userName').skip((pageNumber-1) * postsPerPage).limit(postsPerPage)
+    .populate('uploadedBy','userName profilePic').populate('likedBy','userName')
+    .skip((pageNumber-1) * postsPerPage).limit(postsPerPage)
     allPosts.forEach((post)=>{
       post.likedByCurrentUser=post.likedBy.some((i)=>String(i._id)===String(req.userId))
+      
+      //post.currentUsersFavourite=post.likedBy.some((i)=>String(i._id)===String(req.userId))
     })
     return res.status(200).json({success:true,allPosts})
   }catch(e){
@@ -96,14 +107,17 @@ const getPostDetails=async(req,res)=>{
 }
 
 const editPost=async(req,res)=>{
-  const {title,caption}=req.body
+  let {title,caption}=req.body
   try{
     const post=await Post.findById(req.params.id)
     if(!post){
       return res.status(400).json({success:false,message:'post not available'})
     }
-    post.title=title
-    post.caption=caption
+    if(!title){
+      title=post.title
+    }
+    title ? post.title=title : title=post.title
+    caption ? post.caption=caption : caption=post.caption
     await post.save()
     return res.status(200).json({success:true,message:'post edited successfully',post})
 
@@ -119,13 +133,15 @@ const postsPagination=async(req,res)=>{
     const perPage=4
     const totalPosts=Post.countDocuments()
     const totalPage=Math.floor((totalPosts/perPage))
-
     if(page>totalPage){
       return res.status(404).json({success:false,message:'Page not Found'})
     }
-    const posts=await Post.find({uploadedBy:req.userId}).skip((page-1)*perPage).limit(perPage).populate('likedBy','userName')
+    const user=await User.findById(req.userId)
+    const posts=await Post.find({uploadedBy:req.userId}).skip((page-1)*perPage).limit(perPage)
+    .populate('likedBy','userName').populate('uploadedBy','profilePic')
     posts.forEach((post)=>{
       post.likedByCurrentUser=post.likedBy.some((p)=>String(p._id)===String(req.userId))
+      
     })
     return res.status(200).json({success:true,message:'fetched posts successfull',posts})
   }catch(e){
@@ -137,6 +153,10 @@ const postsPagination=async(req,res)=>{
 const deletePost=async(req,res)=>{
   try{
     const post=await Post.findById(req.params.id)
+    const check=String(post.uploadedBy)===String(req.userId)
+    if(!check){
+      return  res.status(403).json({success:false,message:'you are not authorized to delete this post',post})
+    }
     await Post.findByIdAndDelete(req.params.id)
     return  res.status(200).json({success:true,message:'delete post successfully',post})
   }catch(e){
@@ -146,4 +166,52 @@ const deletePost=async(req,res)=>{
 
 }
 
-module.exports={createPost,findPosts,addLike,fetchAllPosts,getPostDetails,editPost,postsPagination,deletePost}
+const addPostToFavourite=async(req,res)=>{
+  try{
+    const postId=req.params.postId
+    const post=await Post.findById(postId)
+    const user=await User.findById(req.userId)
+    const check=user.FavouritePosts.find((p)=>String(p)===String(post._id))
+    if(check){
+      user.FavouritePosts=user.FavouritePosts.filter((p)=>String(p)!==String(post._id))
+      
+    }else{
+      user.FavouritePosts=[post._id,...user.FavouritePosts]
+    }
+    await user.save()
+    return res.status(200).json({success:true,message:'post added to favourites',userFavourites:user.FavouritePosts})
+  }catch(e){
+    console.log(e)
+  }
+}
+
+const getUserFavourites=async(req,res)=>{
+  try{
+    const user=await User.findById(req.userId).populate({
+      path:'FavouritePosts',
+      populate:[
+        {path:'uploadedBy',select:'userName profilePic'},
+        {path:'likedBy',select:'userName'}
+      ]
+    })
+   
+    return res.status(200).json({success:true,userFavourites:user.FavouritePosts})
+  }catch(e){
+    console.log(e)
+    return res.status(500).json({success:false,message:`${e.message}`})
+  }
+}
+
+
+module.exports = {
+  createPost,
+  findPosts,
+  addLike,
+  fetchAllPosts,
+  getPostDetails,
+  editPost,
+  postsPagination,
+  deletePost,
+  addPostToFavourite,
+  getUserFavourites,
+};

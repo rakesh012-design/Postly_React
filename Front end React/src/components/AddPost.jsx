@@ -1,24 +1,29 @@
-import React from 'react'
+import  { useState } from 'react'
 import { useRef } from 'react'
 import { createPost } from '../store/postsStore'
 import { useDispatch } from 'react-redux'
 import {ToastContainer,toast} from'react-toastify'
+import { CgSpinner } from 'react-icons/cg'
 
 const AddPost = () => {
   const formData=new FormData()
   const titleUseRef=useRef()
   const captionUseRef=useRef()
   const dispatch=useDispatch()
+  const [isLoading,setIsLoading]=useState(false)
 
   const handleImageChange=(e)=>{
-    //console.log(e.target.files[0],'this is from handleImageChange')
-    formData.append('image',e.target.files[0])
+    for(let i=0; i<e.target.files.length;i++){
+      formData.append('image',e.target.files[i])
+    }
+    console.log(e.target.files)
   }
   const handleSubmit=async(e)=>{
     e.preventDefault()
-    //console.log(titleUseRef.current.value,captionUseRef.current.value)
+    
     formData.append("title",titleUseRef.current.value,)
     formData.append("caption",captionUseRef.current.value)
+    setIsLoading(true)
     const res=await dispatch(createPost({formData}))
    
     if(res.payload.success===true){
@@ -26,6 +31,7 @@ const AddPost = () => {
     }else{
       toast.error(res.payload.message)
     }
+    setIsLoading(false)
   }
 
   return (
@@ -79,11 +85,11 @@ const AddPost = () => {
           <label className="form-label">
             Choose an Image
           </label>
-          <input type="file" className="form-control" accept='image/*'  onChange={handleImageChange}/>
+          <input type="file" className="form-control" accept='image/*'  multiple onChange={handleImageChange}/>
           </div>
           
            <div className="form-notch">    
-              <div className="form-notch-trailing flex justify-center"><button className='btn btn-success' onClick={handleSubmit}>Create Post</button></div>
+              <div className="form-notch-trailing flex justify-center"><button className='btn btn-success' onClick={handleSubmit}>{isLoading ?<CgSpinner className='animate-spin'/>: "Create Post"}</button></div>
             </div>
           </form>
         </div>

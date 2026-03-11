@@ -1,43 +1,67 @@
 import React, { useEffect, useState } from 'react'
-import { fetchImages } from '../services/services'
 import  {FaSpinner} from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux'
 import { getPosts } from '../store/postsStore'
 import Post from '../components/Post'
-import {Link} from 'react-router-dom'
+import { useNavigate, useSearchParams} from 'react-router-dom'
 import Pager from '../components/Pager'
+import { toast,ToastContainer } from 'react-toastify'
 
 
 const Home = () => {
   const store=useSelector((store)=>store.postStore)
   const dispatch=useDispatch()
-
+  const navigate=useNavigate()
+   const [searchPageNum]=useSearchParams()
+  const [isLoading,setIsLoading]=useState(true)
   const posts=store.posts 
-  const [pageNum,setPageNum]=useState(1)
+ 
+  const urlPageNum=searchPageNum.get('pageNum')
 
-  const handlePageChange=(num)=>{
+  const [pageNum,setPageNum]=useState(urlPageNum)
+
+  const handlePageChange=async(num)=>{
+    setIsLoading(true)
     setPageNum(num)
+    navigate(`/home?pageNum=${num}`)
     dispatch(getPosts(num))
+    setIsLoading(false)
   }
 
+
   useEffect(()=>{
-    dispatch(getPosts(1))
+    
+    const anFn=async()=> {
+      setIsLoading(true)
+      const res=await dispatch(getPosts(pageNum))
+      if(res.payload.success===false){
+        toast.error(res.payload.message)
+      }
+      setIsLoading(false)
+    }
+    anFn()
+    
   },[])
   
 
   return (
+    <>
+    <ToastContainer position='top-center'/>
     <div className="grid gap-4 grid-cols-4 h-full m-0">
-      {posts.length > 0 ? (
+      
+      {posts?.length > 0 ? (
         posts.map((post, idx) => (
           <Post key={idx}
            post={post}
           />
         ))
       ) : (
-        <h1><FaSpinner className='animate-spin'/></h1>
+        isLoading ? <h1><FaSpinner className='animate-spin'/></h1> :<h1>No Posts</h1>
       )}
-    <Pager changePageNumber={handlePageChange} pageNum={pageNum}/>
+    
     </div>
+    <Pager changePageNumber={handlePageChange} pageNum={pageNum}/>
+    </>
   );
 }
 
