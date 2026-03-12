@@ -20,29 +20,37 @@ export const signupUser=createAsyncThunk('signupUser',
 
 export const verifyUser=createAsyncThunk('verifyUser',
   async({verificationCode})=>{
-    const res=await fetch(`${url}/verify-user`,{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/Json"
-      },
-      body:JSON.stringify({verificationCode})
+   try {
+     const res=await fetch(`${url}/verify-user`,{
+       method:"POST",
+       headers:{
+         "Content-Type":"application/Json"
+       },
+       body:JSON.stringify({verificationCode})
     })
-    const data=await res.json()
-    return data
+     const data=await res.json()
+     return data
+   } catch (error) {
+    return {success:false,message:`something went wrong ${e.message}`}
+   }
   }
 )
 
 export const login=createAsyncThunk('loginUser',async({email,password})=>{
-  const res=await fetch(`${url/login}`,{
-    method:"POST",
-    credentials:'include',
-    headers:{
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({email,password})
-  })
-  const data=await res.json()
-  return data
+  try {
+    const res=await fetch(`${url}/login`,{
+      method:"POST",
+      credentials:'include',
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({email,password})
+    })
+    const data=await res.json()
+    return data
+  } catch (error) {
+    return {success:false,message:`something went wrong ${e.message}`}
+  }
 })
 
 export const fetchUser=createAsyncThunk('fetchUser',async()=>{
@@ -103,15 +111,19 @@ export const checkStatus=createAsyncThunk('checkStatus',
 export const changePassword=createAsyncThunk('changePassword',
   async({oldPassword,newPassword})=>{
     
-    const res=await fetch('http://localhost:3000/api/random/change-password',{
-      credentials:'include',
-      method:'POST',
-      headers:{"Content-Type":"application/Json"},
-      body:JSON.stringify({oldPassword:oldPassword,newPassword:newPassword})
-    })
-    console.log('res from change password',res)
-    const data=await res.json()
-    return data
+    try {
+      const res=await fetch('http://localhost:3000/api/random/change-password',{
+        credentials:'include',
+        method:'POST',
+        headers:{"Content-Type":"application/Json"},
+        body:JSON.stringify({oldPassword:oldPassword,newPassword:newPassword})
+      })
+      console.log('res from change password',res)
+      const data=await res.json()
+      return data
+    } catch (error) {
+      return {success:false,message:`something went wrong ${error.message}`}
+    }
     
   }
 )
