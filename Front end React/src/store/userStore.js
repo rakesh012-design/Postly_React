@@ -2,7 +2,7 @@ import { createSlice,createAsyncThunk,current } from "@reduxjs/toolkit";
 
 
 
-
+const url='https://postly-react-gauu.vercel.app'
 
 export const signupUser=createAsyncThunk('signupUser',
   async({userName,email,password})=>{
@@ -20,7 +20,7 @@ export const signupUser=createAsyncThunk('signupUser',
 
 export const verifyUser=createAsyncThunk('verifyUser',
   async({verificationCode})=>{
-    const res=await fetch('http://localhost:3000/api/random/verify-user',{
+    const res=await fetch(`${url}/verify-user`,{
       method:"POST",
       headers:{
         "Content-Type":"application/Json"
@@ -33,7 +33,7 @@ export const verifyUser=createAsyncThunk('verifyUser',
 )
 
 export const login=createAsyncThunk('loginUser',async({email,password})=>{
-  const res=await fetch('http://localhost:3000/api/random/login',{
+  const res=await fetch(`${url/login}`,{
     method:"POST",
     credentials:'include',
     headers:{
@@ -46,7 +46,7 @@ export const login=createAsyncThunk('loginUser',async({email,password})=>{
 })
 
 export const fetchUser=createAsyncThunk('fetchUser',async()=>{
-  const res=await fetch('http://localhost:3000/api/random/fetch-user/me',{
+  const res=await fetch(`${url}/me`,{
     method:"GET",
     credentials:'include'
   })
@@ -56,7 +56,7 @@ export const fetchUser=createAsyncThunk('fetchUser',async()=>{
 
 export const logoutUser=createAsyncThunk('logoutUser',
   async()=>{
-    const res=await fetch('http://localhost:3000/api/random/logout',{
+    const res=await fetch(`${url}/logout`,{
       method:"POST",
       credentials:"include"
     })
