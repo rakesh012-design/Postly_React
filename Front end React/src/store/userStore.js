@@ -87,12 +87,16 @@ export const googleLoginFunction=createAsyncThunk('googleLogin',
 
 export const checkStatus=createAsyncThunk('checkStatus',
   async()=>{
+    try{
     const res=await fetch('https://postly-react-gauu.vercel.app/check',{
       method:"GET",
       credentials:"include"
     })
     const data=await res.json()
     return data
+  }catch(e){
+    return {success:false,message:`something went wrong ${e.message}`}
+  }
   }
 )
 
